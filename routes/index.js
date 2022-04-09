@@ -3,7 +3,7 @@ const apiRoutes = require('./api');
 
 router.use('/api', apiRoutes);
 router.use((req, res) => { //req syntax required for this to work
-    return res.send('Nonexistent route');
+    res.status(404).send('Nonexistent route');
 
 });
 
