@@ -2,40 +2,46 @@ const { Thought, User } = require('../models');
 
 const userController = {
   getAllUsers(req, res) {
-    User.find()
-    .sort({ createdAt: -1 })
-    .then((dbUserData) => {
-      res.json(dbUserData);
+    User.find({})
+    .populate({
+      path: 'friends',
+      select: '-__v'
     })
-    .catch((err) => {
+    .populate({
+      path: 'thoughts',
+      select: '-__v'
+    })
+    .select('-__v')
+    .sort({ _id: -1 })
+    .then(dbUserData => res.json(dbUserData))
+    .catch(err => {
       console.log(err);
-      res.status(500).json(err);
+      res.sendStatus(400);
     });
   },
 
-  getOneUser(req, res) {
-    User.findOne({ _id: req.params.userId })
-    .then((dbUserData) => {
-      if (!dbUserData) {
-        return res.status(404).json({ message: 'No User assigned to this ID' });
-      }
-      res.json(dbUserData);
+  getOneUser({ params }, res) {
+    User.findOne({ _id: params.id })
+    .populate({
+      path: 'friends',
+      select: '-__v'
     })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
-    });
+    .populate({
+      path: 'thoughts',
+      select: '-__v'
+    })
+    .select('-__v')
+      .then(dbUserData => res.json(dbUserData))
+      .catch(err => {
+        console.log(err);
+        res.sendStatus(400);
+      });
   },
 
-  addUser(req, res) {
-    User.create(req.body)
-    .then((dbUserData) => {
-      res.json(dbUserData);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
-    });
+  addUser({ body }, res) {
+    User.create(body)
+    .then(dbUserData => res.json(dbUserData))
+      .catch(err => res.json(err));
   },
 
   updateUser({params, body}, res) {
@@ -93,7 +99,7 @@ const userController = {
         User.findOneAndUpdate(
           { _id: params.userId },
           { $pull: { friend: { friendId: params.friendId } } },
-          { new: true }
+          { new: true, runValidators: true }
         )
         .then((dbUserData) => res.json(dbUserData))
         .catch((err) => res.json(err));
