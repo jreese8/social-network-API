@@ -38,7 +38,8 @@ const userController = {
       });
   },
 
-  addUser({ body }, res) {
+  addUser( { body }, res) {
+    console.log(body, "Consologing the body");
     User.create(body)
     .then(dbUserData => res.json(dbUserData))
       .catch(err => res.json(err));
